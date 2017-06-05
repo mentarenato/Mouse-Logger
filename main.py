@@ -4,16 +4,17 @@ import ctypes
 import os
 import svgCreator
 
+from datetime import datetime
 from win32gui import GetWindowText, GetForegroundWindow
 from pygame.locals import *
 from svgCreator import render_svg
 
 
 #settings for recording
-title = "League of Legends (TM) Client"
-#title = "Discord"
+title = 'League of Legends (TM) Client'
 debug = True
-
+if debug:
+    title = 'Python 3.6.1'
 
 #settings for display
 SCALING_FACTOR = 0.5
@@ -27,7 +28,7 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (-screenWidth, 35)
 
 #colors used in the display
 COLOR_BACKGROUND = (0, 0, 0)
-COLOR_LINE = (255, 255, 255, 0.01)
+COLOR_LINE = (255, 255, 255, 0.1)
 
 
 #FUNCTIONS
@@ -52,14 +53,29 @@ def inbound(pos):
         return False
     if pos[1] < 0 or pos[1] > monitorHeight:
         return False
-    
     return True
 
-        
+
+def initialize(screen):
+    pygame.init()
+    screen.fill(COLOR_BACKGROUND)
+    pygame.display.set_caption(title + " - Mouse Capture")
+    while len(coordinates) < 2:
+        pos = getMousePos()
+        coordinates.insert(0, pos)
+
+
+def generateTitle(title):
+    date = str(datetime.now())[:-10].replace(':', '.')
+    fileName = 'mouseTrace[' + date + '] - ' + title.strip()
+    return fileName
+
 
 ################# BEGINNING OF THE PROGRAM #################
 
 #output some infos
+        
+print('Starting the capture for ', title)
 log('Monitor Resolution: ', (monitorWidth, monitorHeight))
 log('Background color: ', COLOR_BACKGROUND)
 log('Line color: ', COLOR_LINE)
@@ -69,47 +85,45 @@ coordinates = []
 activeWindow = GetWindowText(GetForegroundWindow())
 
 #wait for program to start...
-log ("\nWaiting for the game to start...")
+   
+print ('\nWaiting for "' + title + '" to start...')
 while title not in activeWindow:
     activeWindow = GetWindowText(GetForegroundWindow())
 
 
 #initialize graphics
-pygame.init()
 screen = pygame.display.set_mode((screenWidth, screenHeight))
-screen.fill(COLOR_BACKGROUND)
-pygame.display.set_caption(title + " - Game mouse logger")
-
-
-#add first movements to list
-while len(coordinates) < 2:
-    pos = getMousePos()
-    coordinates.insert(0, pos)
+initialize(screen)
 
 
 #start logging mouse movements
-log ("\nGame has started, now logging mouse movements...")
+print ('\nGame has started, now logging mouse movements...')
 while title in activeWindow:
 
     #make sure window keeps responding
     pygame.event.get()
-    
+
     #Check if we're still in-game
     activeWindow = GetWindowText(GetForegroundWindow())
-    
+
     #Log movements
     pos = getMousePos()
     if coordinates[0] != pos and inbound(pos):
-        log("Current position: ", pos)
+        log('Current position: ', pos)
         coordinates.insert(0, pos)
 
     #Update display
     drawLine(coordinates[0], coordinates[1])
     pygame.display.update()
-        
+
 
 
 #game is over, save image as vector
-log ("\nGame is over!")
-render_svg('mouseTrace', (monitorWidth, monitorHeight), COLOR_BACKGROUND, COLOR_LINE, coordinates)
+fileName = generateTitle(title)
+print ('\nGame is over!')
+print ('\nCreating SVG-image...')
+render_svg(fileName, (monitorWidth, monitorHeight), COLOR_BACKGROUND, COLOR_LINE, coordinates)
+render_svg(fileName + ' (fullRender)', (monitorWidth, monitorHeight), (0, 0, 0), (255, 255, 255, 1), coordinates)
+print (fileName + '.svg successfully created!')
+print ('\nByeBye:)')
 pygame.quit()
