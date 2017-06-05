@@ -2,13 +2,16 @@ import win32gui
 import pygame
 import ctypes
 import os
+import svgCreator
 
 from win32gui import GetWindowText, GetForegroundWindow
 from pygame.locals import *
+from svgCreator import render_svg
 
 
 #settings for recording
-title = "Discord"
+title = "League of Legends (TM) Client"
+#title = "Discord"
 debug = True
 
 
@@ -24,7 +27,7 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (-screenWidth, 35)
 
 #colors used in the display
 COLOR_BACKGROUND = (0, 0, 0)
-COLOR_LINE = (100, 100, 100, 255)
+COLOR_LINE = (255, 255, 255, 0.01)
 
 
 #FUNCTIONS
@@ -56,11 +59,16 @@ def inbound(pos):
 
 ################# BEGINNING OF THE PROGRAM #################
 
+#output some infos
+log('Monitor Resolution: ', (monitorWidth, monitorHeight))
+log('Background color: ', COLOR_BACKGROUND)
+log('Line color: ', COLOR_LINE)
+
 #initialize variables
 coordinates = []
 activeWindow = GetWindowText(GetForegroundWindow())
 
-#wait for league to start...
+#wait for program to start...
 log ("\nWaiting for the game to start...")
 while title not in activeWindow:
     activeWindow = GetWindowText(GetForegroundWindow())
@@ -91,8 +99,8 @@ while title in activeWindow:
     
     #Log movements
     pos = getMousePos()
-    log("Current position: ", pos)
     if coordinates[0] != pos and inbound(pos):
+        log("Current position: ", pos)
         coordinates.insert(0, pos)
 
     #Update display
@@ -103,4 +111,5 @@ while title in activeWindow:
 
 #game is over, save image as vector
 log ("\nGame is over!")
+render_svg('mouseTrace', (monitorWidth, monitorHeight), COLOR_BACKGROUND, COLOR_LINE, coordinates)
 pygame.quit()
