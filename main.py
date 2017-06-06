@@ -9,13 +9,14 @@ from datetime import datetime
 from win32gui import GetWindowText, GetForegroundWindow
 from pygame.locals import *
 from svgCreator import render_svg
+from windowManager import getActiveWindows
 
 
 #settings for recording
 title = 'League of Legends (TM) Client'
 debug = False
 if debug:
-    title = 'Chrome'
+    title = 'test'
 
 #settings for display
 SCALING_FACTOR = 0.5
@@ -25,15 +26,7 @@ monitorHeight = user.GetSystemMetrics(1)
 screenWidth = int(monitorWidth * SCALING_FACTOR)
 screenHeight = int(monitorHeight * SCALING_FACTOR)
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (-screenWidth, 35)
-
-#system stuff
 activeWindows = []
-EnumWindows = ctypes.windll.user32.EnumWindows
-EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
-GetWindowText = ctypes.windll.user32.GetWindowTextW
-GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
-IsWindowVisible = ctypes.windll.user32.IsWindowVisible
-
 
 #colors used in the display
 COLOR_BACKGROUND = (0, 0, 0)
@@ -41,21 +34,6 @@ COLOR_LINE = (100, 200, 255, 0.1)
 
 
 #FUNCTIONS
-def getActiveWindows():
-    EnumWindows(EnumWindowsProc(foreach_window), 0)
-    for window in activeWindows:
-        if len(window[1]) == 0:
-            activeWindows.remove(window)
-
-def foreach_window(hwnd, lParam):
-    if IsWindowVisible(hwnd):
-        length = GetWindowTextLength(hwnd)
-        buff = ctypes.create_unicode_buffer(length + 1)
-        GetWindowText(hwnd, buff, length + 1)
-        activeWindows.append((hwnd, buff.value))
-    return True
-
-    
 def getMousePos():
     pt = win32gui.GetCursorPos()
     return pt
@@ -83,7 +61,7 @@ def inbound(pos):
 def logActiveWindows():
     log ('\n\nThere are ' + str(len(activeWindows)) + ' windows active:')
     for window in activeWindows:
-        log (window)
+        log ('\t' + str(window))
 
 
 def initialize(screen):
@@ -120,6 +98,7 @@ log('Line color: ', COLOR_LINE)
 #initialize variables
 coordinates = []
 windowChange = False
+activeWindows = getActiveWindows()
 logActiveWindows()
 topWindow = win32gui.GetWindowText(win32gui.GetForegroundWindow())
 
@@ -136,15 +115,16 @@ initialize(screen)
 
 #start logging mouse movements
 print ('\nGame has started, now logging mouse movements...')
-getActiveWindows()
+activeWindows = []
+activeWindows = getActiveWindows()
+logActiveWindows()
 while wantedWindowActive():
 
     #make sure window keeps responding
     pygame.event.get()
 
     #make sure we're still in the wanted window
-    activeWindows = []
-    getActiveWindows()
+    activeWindows = getActiveWindows()
     topWindow = win32gui.GetWindowText(win32gui.GetForegroundWindow())
     if title in topWindow:
         if windowChange:
@@ -174,7 +154,6 @@ print ('\nGame is over!')
 logActiveWindows()
 print ('\nCreating SVG-image...')
 render_svg(fileName, (monitorWidth, monitorHeight), COLOR_BACKGROUND, COLOR_LINE, coordinates)
-render_svg(fileName + ' (fullRender)', (monitorWidth, monitorHeight), (0, 0, 0), (255, 255, 255, 1), coordinates)
 print (fileName + '.svg successfully created!')
 print ('\nByeBye:)')
 pygame.quit()
