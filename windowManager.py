@@ -1,28 +1,58 @@
 import ctypes
+import win32gui
 
-#list of active windows composed of HWND and name
-activeWindows = []
+# List of active windows composed of HWND and name
+openWindows = []
 
-#system stuff
+# System stuff
 EnumWindows = ctypes.windll.user32.EnumWindows
 EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
 GetWindowText = ctypes.windll.user32.GetWindowTextW
 GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
 IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
-#FUNCTIONS
-def foreach_window(hwnd, lParam):
+# FUNCTIONS
+def isWindowOpen(title):
+    """Checks if a window titled 'title' is open"""
+    openWindows = getOpenWindows()
+    for window in openWindows:
+        if title in window[1]:
+            return True
+    return False
+
+
+def _foreach_window(hwnd, lParam):
     if IsWindowVisible(hwnd):
         length = GetWindowTextLength(hwnd)
         buff = ctypes.create_unicode_buffer(length + 1)
         GetWindowText(hwnd, buff, length + 1)
-        activeWindows.append((hwnd, buff.value))
+        openWindows.append((hwnd, buff.value))
     return True
 
-def getActiveWindows():
-    del activeWindows[:]
-    EnumWindows(EnumWindowsProc(foreach_window), 0)
-    for window in activeWindows:
+
+def getOpenWindows():
+    """Returns a list of all windows open"""
+    del openWindows[:]
+    EnumWindows(EnumWindowsProc(_foreach_window), 0)
+    for window in openWindows:
         if len(window[1]) < 2:
-            activeWindows.remove(window)
-    return activeWindows
+            openWindows.remove(window)
+    return openWindows
+
+
+def getActiveWindow():
+    """Returns the name of the currently active window"""
+    activeWindow = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+    return activeWindow
+
+
+def getMonitorResolution():
+    user = ctypes.windll.user32
+    monitorWidth = user.GetSystemMetrics(0)
+    monitorHeight = user.GetSystemMetrics(1)
+    return (monitorWidth, monitorHeight)
+
+
+def getMousePos():
+    pt = win32gui.GetCursorPos()
+    return pt

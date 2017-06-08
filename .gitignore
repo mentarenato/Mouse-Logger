@@ -1,0 +1,8 @@
+# Created vector graphics #
+###########################
+*.svg
+
+
+# Whatever weird shit this is #
+###############################
+.pyc

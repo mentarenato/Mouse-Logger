@@ -1,25 +1,28 @@
-def render_svg(name, size, color_background, color_line, coordinates):
+def render_svg(fileName, size, color_background, color_line, coordinates, scalingFactor = 1.):
 
-    #save some infos
+    # Output some infos
+    print ('\nCreating SVG-image...')
     
-
-    #start writing file
-    image = open(name + '.svg', 'w')
-    writePreamble(image, size, color_background)
+    # Write file
+    image = open(fileName + '.svg', 'w')
+    writePreamble(image, size, color_background, scalingFactor)
     image.write('<polygon points="')
     for coords in coordinates:
-        x = str(coords[0])
-        y = str(coords[1])
+        x = str(coords[0] * scalingFactor)
+        y = str(coords[1] * scalingFactor)
         image.write(x + ',' + y + ' ')
         coordsOld = coords
     image.write('" style="stroke:rgba' + str(color_line) + ';stroke-width:1" />')
     writePostamble(image)
 
+    # Output stuff
+    print (fileName + '.svg successfully created!')
 
 
-def writePreamble(image, size, color_background):
-    width = str(size[0])
-    height = str(size[1])
+
+def writePreamble(image, size, color_background, scalingFactor):
+    width = str(size[0] * scalingFactor)
+    height = str(size[1] * scalingFactor)
     image.write('<?xml version="1.0" standalone="no"?>\n')
     image.write('<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ')
     image.write('"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n')
