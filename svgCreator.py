@@ -8,8 +8,9 @@ def render_svg(fileName, size, color_background, color_line, coordinates, scalin
     writePreamble(image, size, color_background, scalingFactor)
     image.write('<polygon points="')
     for coords in coordinates:
-        x = str(coords[0] * scalingFactor)
-        y = str(coords[1] * scalingFactor)
+        # No need to be perfect, integers are alright
+        x = str(int(coords[0] * scalingFactor))
+        y = str(int(coords[1] * scalingFactor))
         image.write(x + ',' + y + ' ')
         coordsOld = coords
     image.write('" style="stroke:rgba' + str(color_line) + ';stroke-width:1" />')

@@ -13,10 +13,10 @@ from windowManager import *
 
 
 
-################## SETTINGS & CONSTANTS #################
+################## CONSTANTS & SETTINGS #################
 
 # More detailed output, listens to 'Neuer Tab', no vector image
-debug = False
+debug = True
 
 # Abbreviations for programs
 abbreviations = {'lol': 'League of Legends (TM) Client'}
@@ -31,13 +31,12 @@ COLOR_LINE = (100, 200, 255, 0.3)
 
 
 
-
 ################## FUNCTIONS #################
 
 # Used for debug-ouput
-def _log(*args):
+def _log (*args):
     if debug:
-        print (*args)
+        print ('\t[DEBUG]', *args)
 
 
 # Checks if coordinates are in range
@@ -77,6 +76,14 @@ def checkInput(title):
 
 ################# BEGINNING OF THE PROGRAM #################
 
+# Check for debug-mode
+_log ()
+_log ('############################')
+_log ('#####              #########')
+_log ('#####  DEBUG-MODE  #########')
+_log ('#####              #########')
+_log ('############################\n')
+
 # Get name of the program
 title = checkInput(input('Please input the desired program: '))
     
@@ -111,17 +118,18 @@ while isWindowOpen(title):
         pos = getMousePos()
         if not printSwitch:
             printSwitch = True
-            print ('\n\t Here we are again:D')
-            print ('\t Continuing logging coordinates...\n')
-        if coordinates[0] != pos and inbound(pos):
-            _log('Current position: ', pos)
-            coordinates.insert(0, pos)
+            print ('\nHere we are again:D')
+            print ('Continuing logging coordinates...\n')
+        if coordinates[0] != pos and inbound(pos) and pos != (960, 600):
+                _log ('Current position: ', pos)
+                coordinates.insert(0, pos)
     else:
         if printSwitch:
             printSwitch = False
-            print ('\n\t"' + title + '" is open, but not active.')
-            _log('\tActive window: ' + topWindow)
-            print ('\tStopped logging coordinates...\n')
+            _log ('Active window: ' + topWindow)
+            _log ('Timestamp: ' + str(datetime.now()) +'')
+            print ('\n"' + title + '" is open, but not active.')
+            print ('Stop logging coordinates...\n')
 
     # Update display
     drawLine(coordinates[0], coordinates[1])
@@ -131,8 +139,7 @@ while isWindowOpen(title):
 # Game is over, save image as vector
 print ('\n"' + title + '" has terminated!')
 fileName = generateTitle(title)
-if not debug:
-    render_svg(fileName, monitorSize, COLOR_BACKGROUND, COLOR_LINE, coordinates, 0.45)
+render_svg(fileName, monitorSize, COLOR_BACKGROUND, COLOR_LINE, coordinates, 1)
 
 
 # Cleanup
