@@ -16,10 +16,12 @@ from windowManager import *
 ################## CONSTANTS & SETTINGS #################
 
 # More detailed output, listens to 'Neuer Tab', no vector image
-debug = True
+debug = False
 
 # Abbreviations for programs
-abbreviations = {'lol': 'League of Legends (TM) Client'}
+abbreviations = {'lol': 'League of Legends (TM) Client',
+                 'tf2': 'Team Fortress 2',
+                 'smb': 'Super Meat Boy'}
 
 # Settings for display
 SCALING_FACTOR = 0.5
@@ -84,6 +86,13 @@ _log ('#####  DEBUG-MODE  #########')
 _log ('#####              #########')
 _log ('############################\n')
 
+# Start debug or nah
+wannaDebug = ''
+while wannaDebug != 'y' and wannaDebug != 'n':
+    wannaDebug = input('Debug or nah: ').lower()
+if wannaDebug == 'y':
+    debug = True
+
 # Get name of the program
 title = checkInput(input('Please input the desired program: '))
     
@@ -121,8 +130,11 @@ while isWindowOpen(title):
             print ('\nHere we are again:D')
             print ('Continuing logging coordinates...\n')
         if coordinates[0] != pos and inbound(pos) and pos != (960, 600):
+                # Log coordinates, update display
                 _log ('Current position: ', pos)
                 coordinates.insert(0, pos)
+                drawLine(coordinates[0], coordinates[1])
+                pygame.display.update()
     else:
         if printSwitch:
             printSwitch = False
@@ -130,10 +142,6 @@ while isWindowOpen(title):
             _log ('Timestamp: ' + str(datetime.now()) +'')
             print ('\n"' + title + '" is open, but not active.')
             print ('Stop logging coordinates...\n')
-
-    # Update display
-    drawLine(coordinates[0], coordinates[1])
-    pygame.display.update()
 
 
 # Game is over, save image as vector
